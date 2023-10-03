@@ -3,15 +3,16 @@ using BenchmarkDotNet.Attributes;
 
 namespace PerformanceBenchmarks;
 
+[MemoryDiagnoser(true)]
 public class CsvBenchmark
 {
     private const char Separator = ',';
 
 
-    [Params(1000)]
+    [Params(1000, 10_000, 100_000)]
     public int Rows { get; set; }
 
-    [Params(10)]
+    [Params(10, 20)]
     public int Columns { get; set; }
 
     private string _csv = null!;
@@ -36,6 +37,11 @@ public class CsvBenchmark
 
             sb.AppendLine(string.Join(Separator, nums));
         }
+
+        //Remove last \n char
+        sb.Length--;
+
+        _csv = sb.ToString();
     }
 
     [Benchmark]
@@ -64,7 +70,7 @@ public class CsvBenchmark
     [Benchmark]
     public void WithSpan()
     {
-        int rowCount = 0;
+        int rowCount = 1;
 
         ReadOnlySpan<char> csvSpan = _csv.AsSpan();
         foreach (char c in csvSpan)
@@ -76,6 +82,7 @@ public class CsvBenchmark
         }
 
         Span<Range> lineRanges = stackalloc Range[rowCount];
+        csvSpan.Split(lineRanges, '\n');
 
         Range firstLine = lineRanges[0];
         int colCount = csvSpan[firstLine].Count(Separator) + 1;
