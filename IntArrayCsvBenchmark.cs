@@ -4,10 +4,10 @@ using BenchmarkDotNet.Attributes;
 namespace PerformanceBenchmarks;
 
 [MemoryDiagnoser(true)]
-public class CsvBenchmark
+public class IntArrayCsvBenchmark
 {
     private const char Separator = ',';
-
+    private const char NewLine = '\n';
 
     [Params(1000, 10_000, 100_000)]
     public int Rows { get; set; }
@@ -47,7 +47,7 @@ public class CsvBenchmark
     [Benchmark]
     public void Base()
     {
-        string[] csvLines = _csv.Split('\n');
+        string[] csvLines = _csv.Split(NewLine);
 
         int rowCount = csvLines.Length;
         int colCount = csvLines[0].Split(Separator).Length;
@@ -70,27 +70,19 @@ public class CsvBenchmark
     [Benchmark]
     public void WithSpan()
     {
-        int rowCount = 1;
-
         ReadOnlySpan<char> csvSpan = _csv.AsSpan();
-        foreach (char c in csvSpan)
-        {
-            if (c == '\n')
-            {
-                rowCount++;
-            }
-        }
+
+        int rowCount = csvSpan.Count(NewLine) + 1;
 
         Span<Range> lineRanges = stackalloc Range[rowCount];
-        csvSpan.Split(lineRanges, '\n');
+        csvSpan.Split(lineRanges, NewLine);
 
-        Range firstLine = lineRanges[0];
-        int colCount = csvSpan[firstLine].Count(Separator) + 1;
-
-        int[,] data = new int[rowCount, colCount];
+        Range firstLineRange = lineRanges[0];
+        int colCount = csvSpan[firstLineRange].Count(Separator) + 1;
 
         Span<Range> valueRanges = stackalloc Range[colCount];
 
+        int[,] data = new int[rowCount, colCount];
         for (int row = 0; row < rowCount; row++)
         {
             Range lineRange = lineRanges[row];

@@ -1,5 +1,4 @@
-﻿using System.Text;
-using BenchmarkDotNet.Running;
+﻿using BenchmarkDotNet.Running;
 using PerformanceBenchmarks;
 
-BenchmarkRunner.Run<CsvBenchmark>();
+BenchmarkRunner.Run<ObjectMappedCsvBenchmark>();

@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.8" />
+    <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.1.2" />
   </ItemGroup>
 
 </Project>
